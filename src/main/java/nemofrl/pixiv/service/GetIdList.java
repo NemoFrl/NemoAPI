@@ -36,7 +36,7 @@ public class GetIdList {
 	public ArrayList<String> getIdList(int page, String timeStr) {
 		String pixivUrl = "https://www.pixiv.net/ranking.php?mode=monthly&content=illust&format=json&p=" + page
 				+ "&month=" + timeStr;
-		Builder builder = RequestConfig.custom().setSocketTimeout(3000);
+		Builder builder = RequestConfig.custom().setConnectTimeout(3000).setSocketTimeout(3000);
 		if(pixivConfig.isOpenProxy()) {
 			HttpHost proxy = new HttpHost(pixivConfig.getProxyIp(), pixivConfig.getProxyPort(), "http");
 			builder.setProxy(proxy);

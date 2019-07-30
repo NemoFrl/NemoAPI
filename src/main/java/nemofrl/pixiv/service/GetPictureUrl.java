@@ -53,8 +53,8 @@ public class GetPictureUrl implements Callable<String> {
 			HttpResponse response = client2.execute(get2);
 			if(response.getStatusLine().getStatusCode()==HttpStatus.SC_OK) {
 				String pictureContent = EntityUtils.toString(response.getEntity(), "UTF-8");
-				System.out.println(pictureContent);
-				Pattern pattern = Pattern.compile("sc-LzNch");
+//				System.out.println(pictureContent);
+				Pattern pattern = Pattern.compile("\"original\":\".{0,100}\\}");
 				Matcher matcher = pattern.matcher(pictureContent);
 				if (matcher.find()) {
 					String temp = matcher.group();

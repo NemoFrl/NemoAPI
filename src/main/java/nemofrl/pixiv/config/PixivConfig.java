@@ -17,6 +17,9 @@ public class PixivConfig {
 	@Value("${openProxy:}")
 	private boolean openProxy;
 	
+	@Value("${cookie:}")
+	private String cookie;
+	
 	public String getSaveFilePath() {
 		return saveFilePath;
 	}
@@ -47,6 +50,14 @@ public class PixivConfig {
 
 	public void setOpenProxy(boolean openProxy) {
 		this.openProxy = openProxy;
+	}
+
+	public String getCookie() {
+		return cookie;
+	}
+
+	public void setCookie(String cookie) {
+		this.cookie = cookie;
 	}
 
 	
