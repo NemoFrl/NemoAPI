@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +28,7 @@ public class PixivController {
 	private PixivConfig pixivConfig;
 	
 	@RequestMapping(value = "/getOneShetu", produces = { "application/json;charset=UTF-8" })
-	public String getOneShetu() {
+	public String getOneShetu(String id) {
 
 		String cookies = pixivConfig.getCookie();
 
@@ -44,19 +45,21 @@ public class PixivController {
 		
 		int index=(int) (Math.random() * ids.size());
 		String randomId = ids.get(index);
-
-		logger.info("开始获取随机图片url");
-		String randomUrl = new GetPictureUrl(pixivConfig.isOpenProxy(),
+		
+		if(StringUtils.isBlank(id)||id.equals("null"))
+			id=randomId;
+		logger.info("开始获取图片url");
+		String url = new GetPictureUrl(pixivConfig.isOpenProxy(),
 				pixivConfig.getProxyIp(),pixivConfig.getProxyPort(),
-				randomId, cookies).call();
-		logger.info("获取图片url成功，url："+randomUrl);
+				id, cookies).call();
+		logger.info("获取图片url成功，url："+url);
 		
 		logger.info("开始下载图片");
 		new DownloadExecutor(pixivConfig.isOpenProxy(),pixivConfig.getProxyIp(),pixivConfig.getProxyPort(),
-				randomUrl, randomId, timeStr).run();
+				url, id, timeStr).run();
 		logger.info("图片下载成功");
 		
-		String shetuUrl="/image/pixiv/" + timeStr + "/"+randomId+".jpg";
+		String shetuUrl="/image/pixiv/" + timeStr + "/"+id+".jpg";
 		logger.info("响应色图url："+shetuUrl);
 		return shetuUrl;
 	}
