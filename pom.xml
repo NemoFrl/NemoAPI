@@ -56,7 +56,7 @@
                 <configuration>
                     <!--不打包资源文件-->
                     <excludes>
-                        <exclude>*.*.properties</exclude>
+                        <exclude>*.properties</exclude>
                     </excludes>
                     <archive>
                         <manifest>
