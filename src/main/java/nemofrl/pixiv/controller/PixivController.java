@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -28,8 +30,10 @@ public class PixivController {
 	private PixivConfig pixivConfig;
 	
 	@RequestMapping(value = "/getOneShetu", produces = { "application/json;charset=UTF-8" })
-	public String getOneShetu(String id) {
+	public String getOneShetu(HttpServletResponse resp,String id) {
 
+		resp.setHeader("Access-Control-Allow-Origin", "*");
+		
 		String cookies = pixivConfig.getCookie();
 
 		Calendar calendar = Calendar.getInstance();
