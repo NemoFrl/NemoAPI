@@ -1,4 +1,4 @@
-package nemofrl.pixiv.config;
+package nemofrl.nemoapi.config;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -13,7 +13,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupp
 @Configuration
 public class WebMvcConfiguration extends WebMvcConfigurationSupport  {
 	@Autowired
-	private PixivConfig pixivConfig;
+	private NemoAPIConfig nemoAPIConfig;
 	@Override
 	public void addResourceHandlers(ResourceHandlerRegistry registry) {
 		String location;
@@ -24,8 +24,8 @@ public class WebMvcConfiguration extends WebMvcConfigurationSupport  {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		if(StringUtils.isNotBlank(pixivConfig.getSaveFilePath()))
-			location="file:"+pixivConfig.getSaveFilePath();
+		if(StringUtils.isNotBlank(nemoAPIConfig.getSaveFilePath()))
+			location="file:"+nemoAPIConfig.getSaveFilePath();
 		else location=path.getParentFile().getParentFile().getParent()+File.separator;
 		registry.addResourceHandler("/image/**").addResourceLocations(location);
 		super.addResourceHandlers(registry);

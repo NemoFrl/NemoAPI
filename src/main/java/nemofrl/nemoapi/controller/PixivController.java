@@ -1,5 +1,6 @@
-package nemofrl.pixiv.controller;
+package nemofrl.nemoapi.controller;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -14,10 +15,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import nemofrl.pixiv.config.PixivConfig;
-import nemofrl.pixiv.service.DownloadExecutor;
-import nemofrl.pixiv.service.GetIdList;
-import nemofrl.pixiv.service.GetPictureUrl;
+import nemofrl.nemoapi.config.NemoAPIConfig;
+import nemofrl.nemoapi.entity.RespDTO;
+import nemofrl.nemoapi.exception.NemoAPIException;
+import nemofrl.nemoapi.service.impl.PixivDownloadExecutor;
+import nemofrl.nemoapi.service.impl.PixivGetIdList;
+import nemofrl.nemoapi.service.impl.PixivGetPictureUrl;
 
 @RestController
 public class PixivController {
@@ -25,16 +28,16 @@ public class PixivController {
 	private static final Logger logger = LogManager.getLogger(PixivController.class);
 	
 	@Autowired
-	private GetIdList getIdList;
+	private PixivGetIdList getIdList;
 	@Autowired
-	private PixivConfig pixivConfig;
-	
-	@RequestMapping(value = "/getOneShetu", produces = { "application/json;charset=UTF-8" })
-	public String getOneShetu(HttpServletResponse resp,String id) {
+	private NemoAPIConfig nemoAPIConfig;
 
+	@RequestMapping(value = "/getOneShetu", produces = { "application/json;charset=UTF-8" })
+	public RespDTO getOneShetu(HttpServletResponse resp,String id) {
+		RespDTO respDTO=new RespDTO("请求成功",RespDTO.SUCCESS,null);
 		resp.setHeader("Access-Control-Allow-Origin", "*");
 		
-		String cookies = pixivConfig.getCookie();
+		String cookies = nemoAPIConfig.getCookie();
 
 		Calendar calendar = Calendar.getInstance();
 		Date time = calendar.getTime();
@@ -53,19 +56,35 @@ public class PixivController {
 		if(StringUtils.isBlank(id)||id.equals("null"))
 			id=randomId;
 		logger.info("开始获取图片url");
-		String url = new GetPictureUrl(pixivConfig.isOpenProxy(),
-				pixivConfig.getProxyIp(),pixivConfig.getProxyPort(),
+		String url = new PixivGetPictureUrl(nemoAPIConfig.isOpenProxy(),
+				nemoAPIConfig.getProxyIp(),nemoAPIConfig.getProxyPort(),
 				id, cookies).call();
+		
+		if(url==null) {
+			respDTO.setCode(NemoAPIException.ERROR_SYSTEM);
+			respDTO.setMsg("获取色图失败了，重新gkd试试看？");
+			return respDTO;
+		}
 		logger.info("获取图片url成功，url："+url);
 		
 		logger.info("开始下载图片");
-		new DownloadExecutor(pixivConfig.isOpenProxy(),pixivConfig.getProxyIp(),pixivConfig.getProxyPort(),
+		new PixivDownloadExecutor(nemoAPIConfig.isOpenProxy(),nemoAPIConfig.getProxyIp(),nemoAPIConfig.getProxyPort(),
 				url, id, timeStr).run();
 		logger.info("图片下载成功");
 		
+		File file=new File("pixiv/" + timeStr + "/" + id + ".jpg");
+		if(!file.exists()) {
+			respDTO.setCode(NemoAPIException.ERROR_SYSTEM);
+			respDTO.setMsg("获取色图失败了，重新gkd试试看？");
+			return respDTO;
+		}
+		
 		String shetuUrl="/image/pixiv/" + timeStr + "/"+id+".jpg";
 		logger.info("响应色图url："+shetuUrl);
-		return shetuUrl;
+		respDTO.setData(shetuUrl);
+		
+		return respDTO;
 	}
-
+	
+	
 }

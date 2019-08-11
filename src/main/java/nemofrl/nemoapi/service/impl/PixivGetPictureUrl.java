@@ -1,4 +1,4 @@
-package nemofrl.pixiv.service;
+package nemofrl.nemoapi.service.impl;
 import java.util.concurrent.Callable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -15,17 +15,17 @@ import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import nemofrl.pixiv.exception.PixivException;
+import nemofrl.nemoapi.exception.NemoAPIException;
 
-public class GetPictureUrl implements Callable<String> {
+public class PixivGetPictureUrl implements Callable<String> {
 	private String id;
 	private String cookies;
 	private boolean openProxy;
-	private static final Logger logger=LogManager.getLogger(GetPictureUrl.class);
+	private static final Logger logger=LogManager.getLogger(PixivGetPictureUrl.class);
 	private int proxyPort;
 	private String proxyIp;
 	
-	public GetPictureUrl(boolean openProxy,String proxyIp,int proxyPort,String id, String cookies) {
+	public PixivGetPictureUrl(boolean openProxy,String proxyIp,int proxyPort,String id, String cookies) {
 		this.id = id;
 		this.cookies = cookies;
 		this.openProxy=openProxy;
@@ -34,7 +34,7 @@ public class GetPictureUrl implements Callable<String> {
 	}
 
 	public String call(){
-		Builder builder= RequestConfig.custom().setSocketTimeout(3000).setConnectTimeout(3000);
+		Builder builder= RequestConfig.custom().setConnectionRequestTimeout(3000).setSocketTimeout(3000).setConnectTimeout(3000);
 		if(openProxy) {
 			HttpHost proxy = new HttpHost(proxyIp, proxyPort, "http");
 			builder.setProxy(proxy);
@@ -59,11 +59,11 @@ public class GetPictureUrl implements Callable<String> {
 				if (matcher.find()) {
 					String temp = matcher.group();
 					return temp.substring(12, temp.length() - 2);
-				} else throw new PixivException("匹配original(图片地址)失败",PixivException.ERROR_MATCHER);
-			}else throw new PixivException("http请求失败",PixivException.ERROR_HTTPSTATUS);
+				} else throw new NemoAPIException("匹配original(图片地址)失败",NemoAPIException.ERROR_MATCHER);
+			}else throw new NemoAPIException("http请求失败",NemoAPIException.ERROR_NETSTATUS);
 		} catch(Exception e) {
-			if(e instanceof PixivException) {
-				PixivException e1=(PixivException) e;
+			if(e instanceof NemoAPIException) {
+				NemoAPIException e1=(NemoAPIException) e;
 				logger.error(e1.getMsg());
 			} else logger.error("系统错误",e);
 			return null;

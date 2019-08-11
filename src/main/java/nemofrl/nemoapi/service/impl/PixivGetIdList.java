@@ -1,4 +1,4 @@
-package nemofrl.pixiv.service;
+package nemofrl.nemoapi.service.impl;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -22,23 +22,23 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import nemofrl.pixiv.config.PixivConfig;
-import nemofrl.pixiv.exception.PixivException;
+import nemofrl.nemoapi.config.NemoAPIConfig;
+import nemofrl.nemoapi.exception.NemoAPIException;
 
 @Component
-public class GetIdList {
+public class PixivGetIdList {
 
 	@Autowired
-	private PixivConfig pixivConfig;
+	private NemoAPIConfig nemoAPIConfig;
 	
-	private static final Logger logger=LogManager.getLogger(GetIdList.class);
+	private static final Logger logger=LogManager.getLogger(PixivGetIdList.class);
 	
 	public ArrayList<String> getIdList(int page, String timeStr) {
 		String pixivUrl = "https://www.pixiv.net/ranking.php?mode=monthly&content=illust&format=json&p=" + page
 				+ "&month=" + timeStr;
-		Builder builder = RequestConfig.custom().setConnectTimeout(3000).setSocketTimeout(3000);
-		if(pixivConfig.isOpenProxy()) {
-			HttpHost proxy = new HttpHost(pixivConfig.getProxyIp(), pixivConfig.getProxyPort(), "http");
+		Builder builder = RequestConfig.custom().setConnectionRequestTimeout(3000).setConnectTimeout(3000).setSocketTimeout(3000);
+		if(nemoAPIConfig.isOpenProxy()) {
+			HttpHost proxy = new HttpHost(nemoAPIConfig.getProxyIp(), nemoAPIConfig.getProxyPort(), "http");
 			builder.setProxy(proxy);
 		}
 		RequestConfig requestConfig = builder.build();
@@ -61,12 +61,12 @@ public class GetIdList {
 				}
 				return ids;
 			} else
-				throw new PixivException("http请求失败", PixivException.ERROR_HTTPSTATUS);
+				throw new NemoAPIException("http请求失败", NemoAPIException.ERROR_NETSTATUS);
 		} catch (ClientProtocolException e) {
 			logger.error("ClientProtocolException", e);
 		} catch (IOException e) {
 			logger.error("IOException", e);
-		} catch (PixivException e) {
+		} catch (NemoAPIException e) {
 			logger.error(e.getMessage(), e);
 		}
 		return ids;

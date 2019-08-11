@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE generatorConfiguration PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN" "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
+<generatorConfiguration>
+  <context id="context1">
+    <property name="useInformationSchema" value="true"/>
+    <jdbcConnection connectionURL="jdbc:mysql://192.168.0.105:3306/wordpress?useUnicode=true&amp;characterEncoding=utf8" driverClass="com.mysql.cj.jdbc.Driver" password="root" userId="root" >
+    <property name="useInformationSchema" value="true"/>
+	    <!--设置可以获取remarks信息-->
+	    <property name="remarks" value="true"/>
+    </jdbcConnection>
+
+    <javaModelGenerator targetPackage="nemofrl.nemoapi.entity" targetProject="pixiv/src/main/java" />
+    <sqlMapGenerator targetPackage="nemofrl.nemoapi.dao.impl" targetProject="pixiv/src/main/java" />
+    <javaClientGenerator targetPackage="nemofrl.nemoapi.dao" targetProject="pixiv/src/main/java" type="XMLMAPPER" />
+    <table tableName="wp_term_relationships">
+    </table>
+  </context>
+</generatorConfiguration>

@@ -1,4 +1,4 @@
-package nemofrl.pixiv.service;
+package nemofrl.nemoapi.service.impl;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -17,16 +17,16 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 
-public class DownloadExecutor implements Runnable {
+public class PixivDownloadExecutor implements Runnable {
 	private String pictureUrl;
 	private String id;
 	private String date;
 	private boolean openProxy;
-	private static final Logger logger=LogManager.getLogger(DownloadExecutor.class);
+	private static final Logger logger=LogManager.getLogger(PixivDownloadExecutor.class);
 	private int proxyPort;
 	private String proxyIp;
 	
-	public DownloadExecutor(boolean openProxy,String proxyIp,int proxyPort,String pictureUrl, String id, String date) {
+	public PixivDownloadExecutor(boolean openProxy,String proxyIp,int proxyPort,String pictureUrl, String id, String date) {
 		this.pictureUrl = pictureUrl;
 		this.id = id;
 		this.date = date;
@@ -39,7 +39,7 @@ public class DownloadExecutor implements Runnable {
 		File photo = new File("pixiv/" + date + "/"+id+".jpg");
 		if(photo.exists())
 		return;
-		Builder builder= RequestConfig.custom().setSocketTimeout(10000).setConnectTimeout(3000);
+		Builder builder= RequestConfig.custom().setConnectionRequestTimeout(3000).setSocketTimeout(10000).setConnectTimeout(3000);
 		if(openProxy) {
 			HttpHost proxy = new HttpHost(proxyIp, proxyPort, "http");
 			builder.setProxy(proxy);

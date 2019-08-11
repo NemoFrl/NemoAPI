@@ -1,10 +1,10 @@
-package nemofrl.pixiv.config;
+package nemofrl.nemoapi.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class PixivConfig {
+public class NemoAPIConfig {
 	@Value("${saveFilePath:}")
     private String saveFilePath;
 
