@@ -9,10 +9,10 @@
 	    <property name="remarks" value="true"/>
     </jdbcConnection>
 
-    <javaModelGenerator targetPackage="nemofrl.nemoapi.entity" targetProject="pixiv/src/main/java" />
-    <sqlMapGenerator targetPackage="nemofrl.nemoapi.dao.impl" targetProject="pixiv/src/main/java" />
-    <javaClientGenerator targetPackage="nemofrl.nemoapi.dao" targetProject="pixiv/src/main/java" type="XMLMAPPER" />
-    <table tableName="wp_term_relationships">
+    <javaModelGenerator targetPackage="nemofrl.nemoapi.entity" targetProject="nemoapi/src/main/java" />
+    <sqlMapGenerator targetPackage="nemofrl.nemoapi.dao.impl" targetProject="nemoapi/src/main/java" />
+    <javaClientGenerator targetPackage="nemofrl.nemoapi.dao" targetProject="nemoapi/src/main/java" type="XMLMAPPER" />
+    <table tableName="wp_posts">
     </table>
   </context>
 </generatorConfiguration>

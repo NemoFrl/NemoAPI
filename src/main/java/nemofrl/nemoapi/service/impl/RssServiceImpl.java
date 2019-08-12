@@ -55,8 +55,7 @@ public class RssServiceImpl implements RssService {
 				String title=entry.getTitle();
 //				String content=description.getValue().substring(description.getValue().indexOf("value=")+1);
 //				String title=entry.getTitle().substring(entry.getTitle().indexOf("value=")+1);
-				postsService.publish(content, title,entry.getPublishedDate(),13);
-				logger.info("读取rss成功："+entry.getTitle());
+				postsService.publish(content, title, entry.getLink(),entry.getPublishedDate(),13);
 //				System.out.println("标题：" + entry.getTitle());
 //				System.out.println("连接地址：" + entry.getLink());
 //				System.out.println("标题简介：" + description.getValue());

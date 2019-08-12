@@ -23,8 +23,8 @@ public class PostsServiceImpl implements PostsService{
 	private WpTermRelationshipsMapper wpTermRelationshipsMapper;
 	private static final Logger logger=LogManager.getLogger(PostsServiceImpl.class);
 	
-	public void publish(String content,String title,Date publishedDate,long term) throws UnsupportedEncodingException {
-		int exist=wpPostsMapper.countByTitle(title);
+	public void publish(String content,String title,String rssId,Date publishedDate,long term) throws UnsupportedEncodingException {
+		int exist=wpPostsMapper.countByRssId(rssId);
 		if(exist>0) {
 			logger.debug("标题为："+title+"的文章已存在，忽略");
 			return;
@@ -54,11 +54,13 @@ public class PostsServiceImpl implements PostsService{
 		wpPostsWithBLOBs.setPostType("post");
 		wpPostsWithBLOBs.setPostMimeType("");
 		wpPostsWithBLOBs.setCommentCount(Long.valueOf(0));
+		wpPostsWithBLOBs.setRssId(rssId);
 		wpPostsMapper.insert(wpPostsWithBLOBs);
 		WpTermRelationships relationships=new WpTermRelationships();
 		relationships.setObjectId(Long.valueOf(p));
 		relationships.setTermTaxonomyId(term);
 		relationships.setTermOrder(0);
 		wpTermRelationshipsMapper.insert(relationships);
+		logger.info("发布文章成功，title："+title);
 	}
 }
