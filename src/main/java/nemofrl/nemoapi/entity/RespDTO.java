@@ -4,6 +4,7 @@ public class RespDTO {
 
 	public static final String SUCCESS="000";
 	public static final String ERROR_PARAMSLACK="010";
+	public static final String ERROR_PARAMSERROR="011";
 	
 	private String msg;
 	private String code;

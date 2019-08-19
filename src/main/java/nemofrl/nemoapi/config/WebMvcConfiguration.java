@@ -28,6 +28,12 @@ public class WebMvcConfiguration extends WebMvcConfigurationSupport  {
 			location="file:"+nemoAPIConfig.getSaveFilePath();
 		else location=path.getParentFile().getParentFile().getParent()+File.separator;
 		registry.addResourceHandler("/image/**").addResourceLocations(location);
+		
+		String videoLocation;
+		if(StringUtils.isNotBlank(nemoAPIConfig.getSaveVideoPath()))
+			videoLocation="file:"+nemoAPIConfig.getSaveVideoPath();
+		else videoLocation=path.getParentFile().getParentFile().getParent()+File.separator;
+		registry.addResourceHandler("/video/**").addResourceLocations(videoLocation);
 		super.addResourceHandlers(registry);
 	}
 }

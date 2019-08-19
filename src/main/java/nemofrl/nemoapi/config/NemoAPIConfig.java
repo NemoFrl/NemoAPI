@@ -7,7 +7,10 @@ import org.springframework.context.annotation.Configuration;
 public class NemoAPIConfig {
 	@Value("${saveFilePath:}")
     private String saveFilePath;
-
+	
+	@Value("${saveVideoPath:}")
+	private String saveVideoPath;
+	
 	@Value("${proxyIp:}")
 	private String proxyIp;
 	
@@ -58,6 +61,14 @@ public class NemoAPIConfig {
 
 	public void setCookie(String cookie) {
 		this.cookie = cookie;
+	}
+
+	public String getSaveVideoPath() {
+		return saveVideoPath;
+	}
+
+	public void setSaveVideoPath(String saveVideoPath) {
+		this.saveVideoPath = saveVideoPath;
 	}
 
 	
