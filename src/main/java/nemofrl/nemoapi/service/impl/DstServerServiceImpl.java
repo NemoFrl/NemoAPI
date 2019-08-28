@@ -1,6 +1,5 @@
 package nemofrl.nemoapi.service.impl;
 
-import java.io.IOException;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -8,22 +7,16 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
-import org.apache.http.HttpHost;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.config.RequestConfig.Builder;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,8 +28,13 @@ import com.google.gson.reflect.TypeToken;
 import nemofrl.nemoapi.config.NemoAPIConfig;
 import nemofrl.nemoapi.entity.DstServerListVO;
 import nemofrl.nemoapi.entity.DstServerVO;
+import nemofrl.nemoapi.entity.IpVO;
+import nemofrl.nemoapi.entity.StreamUserInfo;
 import nemofrl.nemoapi.exception.NemoAPIException;
 import nemofrl.nemoapi.service.DstServerService;
+import nemofrl.nemoapi.service.StreamService;
+import nemofrl.nemoapi.util.HttpUtil;
+import nemofrl.nemoapi.util.HttpUtil.HttpMethod;
 
 @Service("dstServerService")
 public class DstServerServiceImpl implements DstServerService{
@@ -46,26 +44,18 @@ public class DstServerServiceImpl implements DstServerService{
 	private static final Logger logger = LogManager.getLogger(DstServerServiceImpl.class);
 	
 	private List<DstServerVO> dstServerVOList;
+	
+	@Autowired
+	private StreamService streamService;
+
+	@Autowired
+	private HttpUtil httpUtil;
+	
 	private Date cacheTime;
+	
 	public void getServerList() throws NemoAPIException {
-		Builder builder = RequestConfig.custom().setConnectionRequestTimeout(3000).setConnectTimeout(3000).setSocketTimeout(3000);
-		if (nemoAPIConfig.isOpenProxy()) {
-			HttpHost proxy = new HttpHost(nemoAPIConfig.getProxyIp(), nemoAPIConfig.getProxyPort(), "http");
-			builder.setProxy(proxy);
-		}
-		RequestConfig requestConfig = builder.build();
-		HttpClient httpClient = HttpClientBuilder.create().build();
-		HttpGet httpGet = new HttpGet("https://d2fr86khx60an2.cloudfront.net/China-Steam-noevent.json.gz");
-		httpGet.setConfig(requestConfig);
-		String result;
-		try {
-			HttpResponse resp = httpClient.execute(httpGet);
-			if (resp.getStatusLine().getStatusCode() == HttpStatus.SC_OK)
-				result = EntityUtils.toString(resp.getEntity(), "UTF-8");
-			else throw new NemoAPIException("klei api响应码错误", NemoAPIException.ERROR_NETSTATUS);
-		} catch (IOException e) {
-			throw new NemoAPIException("请求klei api失败", NemoAPIException.ERROR_NETCONNECT, e);
-		}
+		String url="https://d2fr86khx60an2.cloudfront.net/China-Steam-noevent.json.gz";
+		String result=httpUtil.httpReq(true, url, HttpMethod.GET,null);
 		Gson gson=new Gson();
 		DstServerListVO dstServerListVO=gson.fromJson(result, DstServerListVO.class);
 		dstServerVOList = dstServerListVO.getGET();
@@ -77,15 +67,19 @@ public class DstServerServiceImpl implements DstServerService{
 	@Override
 	public Map<String,Object> getServerListFromCache(int currentPage,int pageSize,String search) throws NemoAPIException {
 		Map<String,Object> result=new HashMap<String, Object>();
-		Date now=new Date();
-		long cachedTime=1000*30;
-		long dataLifeTime=cachedTime;
-		if(cacheTime!=null)
-			dataLifeTime=now.getTime()-cacheTime.getTime();
-		if(dataLifeTime>=cachedTime||dstServerVOList==null||dstServerVOList.size()==0) {
-			logger.info("数据已过时，重新拉取新数据");
+//		Date now=new Date();
+//		long cachedTime=1000*30;
+//		long dataLifeTime=cachedTime;
+//		if(cacheTime!=null)
+//			dataLifeTime=now.getTime()-cacheTime.getTime();
+//		if(dataLifeTime>=cachedTime||dstServerVOList==null||dstServerVOList.size()==0) {
+//			logger.info("数据已过时，重新拉取新数据");
+//			getServerList();
+//		} else logger.info("数据未过时，读取缓存数据");
+		if(dstServerVOList==null||dstServerVOList.size()==0) {
+			logger.info("服务器数据为空，拉取新数据");
 			getServerList();
-		} else logger.info("数据未过时，读取缓存数据");
+		}
 		int recordCount=dstServerVOList.size();
 		int pageCount=(recordCount/pageSize)==(1.0*recordCount/pageSize)?(recordCount/pageSize):(recordCount/pageSize+1);
 		List<DstServerVO> pageList=new ArrayList<>(); 
@@ -99,9 +93,11 @@ public class DstServerServiceImpl implements DstServerService{
 					afterSearch.add(dstServerVOList.get(i));
 				}
 			}
+			recordCount=afterSearch.size();
+			pageCount=(recordCount/pageSize)==(1.0*recordCount/pageSize)?(recordCount/pageSize):(recordCount/pageSize+1);
 			if(currentPage<=pageCount) {
 				int startIndex=(currentPage-1)*pageSize;
-				int endIndex=currentPage*pageSize>afterSearch.size()?afterSearch.size():currentPage*pageSize;
+				int endIndex=currentPage*pageSize>recordCount?recordCount:currentPage*pageSize;
 				pageList=afterSearch.subList(startIndex, endIndex);
 			}
 		} else {
@@ -111,6 +107,40 @@ public class DstServerServiceImpl implements DstServerService{
 				pageList=dstServerVOList.subList(startIndex, endIndex);
 			}
 		}
+		
+		ExecutorService es=Executors.newFixedThreadPool(10);
+		List<Future<IpVO>> ftIpVOList = new ArrayList<Future<IpVO>>(); 
+		for(int i=0;i<pageList.size();i++) {
+			DstServerVO dstServerVO=pageList.get(i);
+			Future<IpVO> ftIpVO=es.submit(new IpInfoExecutor(dstServerVO.get__addr()));
+			ftIpVOList.add(ftIpVO);
+		}
+		 //遍历任务的结果
+        for (Future<IpVO> fs : ftIpVOList) { 
+                try { 
+                	IpVO ipVO = fs.get();
+                	if(ipVO.getStatus().equals("success")) {
+                		for(DstServerVO dstServerVO:pageList) {
+                			if(dstServerVO.get__addr().equals(ipVO.getQuery())) {
+		            			dstServerVO.setCity(ipVO.getCity());
+		            			dstServerVO.setCountry(ipVO.getCountry());
+		            			dstServerVO.setOrg(ipVO.getOrg());
+		            			dstServerVO.setRegionName(ipVO.getRegionName());
+		            			break;
+                			}
+                		}
+            		} 
+                } catch (InterruptedException e) { 
+                        e.printStackTrace(); 
+                } catch (ExecutionException e) { 
+                        e.printStackTrace(); 
+                } finally { 
+                        //启动一次顺序关闭，执行以前提交的任务，但不接受新任务。如果已经关闭，则调用没有其他作用。
+                	es.shutdown(); 
+                } 
+        } 
+		//IpVO ipVO=getIpInfo(dstServerVO.get__addr());
+		
 		result.put("rows", pageList);
 		result.put("total", recordCount);
 		return result;
@@ -120,18 +150,11 @@ public class DstServerServiceImpl implements DstServerService{
 
 	@Override
 	public Map<String, Object> getServerInfo(String token, String rowId) throws NemoAPIException {
-		Builder builder = RequestConfig.custom().setConnectionRequestTimeout(3000).setConnectTimeout(3000).setSocketTimeout(3000);
-		if (nemoAPIConfig.isOpenProxy()) {
-			HttpHost proxy = new HttpHost(nemoAPIConfig.getProxyIp(), nemoAPIConfig.getProxyPort(), "http");
-			builder.setProxy(proxy);
-		}
-		RequestConfig requestConfig = builder.build();
-		HttpClient httpClient = HttpClientBuilder.create().build();
-		HttpPost httpPost = new HttpPost("https://lobby-china.kleientertainment.com/lobby/read");
-		httpPost.setConfig(requestConfig);
 		
 		Map<String,Object> params=new HashMap<>();
 		Map<String,String> query=new HashMap<>();
+		if(StringUtils.isBlank(token))
+			token=nemoAPIConfig.getDstToken();
 		query.put("__rowId", rowId);
 		params.put("__gameId", "DontStarveTogether");
 		params.put("__token", token);
@@ -139,16 +162,11 @@ public class DstServerServiceImpl implements DstServerService{
 		
 		Gson gson=new Gson();
 		HttpEntity entity=new StringEntity(gson.toJson(params),StandardCharsets.UTF_8);
-		httpPost.setEntity(entity);
-		String result;
-		try {
-			HttpResponse resp = httpClient.execute(httpPost);
-			if (resp.getStatusLine().getStatusCode() == HttpStatus.SC_OK)
-				result = EntityUtils.toString(resp.getEntity(), "UTF-8");
-			else throw new NemoAPIException("klei api响应码错误", NemoAPIException.ERROR_NETSTATUS);
-		} catch (IOException e) {
-			throw new NemoAPIException("请求klei api失败", NemoAPIException.ERROR_NETCONNECT, e);
-		}
+		
+		String url="https://lobby-china.kleientertainment.com/lobby/read";
+		String result=httpUtil.httpReq(true, url, HttpMethod.POST,entity);
+		logger.info("dstsever detail："+result);
+		
 		DstServerListVO voList=gson.fromJson(result, DstServerListVO.class);
 		
 		Map<String,Object> returnResult=new HashMap<String, Object>();
@@ -177,39 +195,32 @@ public class DstServerServiceImpl implements DstServerService{
 		//players=players.replaceAll("\"", "");
 		
 		players="["+players+"]";
-		Type type=new TypeToken<List<Map<String, String>>>() {}.getType();
-		Map serverDataMap=gson.fromJson(data, Map.class);
-		List playersMap=gson.fromJson(players, type);
-//		Pattern p=Pattern.compile("\\[\\\".{0,25}\\\"\\]=.*?[, ]");
-//		Matcher m=p.matcher(data);
-//		
-//		Map<String,Integer> serverDataMap=new HashMap<>();
-//		
-//		while(m.find()) {
-//			String find=m.group();
-//			String num=find.substring(find.indexOf("=")+1);
-//			String key=find.substring(find.indexOf("\"")+1,find.lastIndexOf("=")-2);
-//			num=num.replaceAll(" ", "");
-//			num=num.replaceAll(",", "");
-//			
-//			serverDataMap.put(key, Integer.valueOf(num));
-//		}
-//		
-//		m=p.matcher(players);
-//		Map<String,String> playersMap=new HashMap<>();
-//		
-//		while(m.find()) {
-//			String find=m.group();
-//			String value=find.substring(find.indexOf("=")+1);
-//			String key=find.substring(find.indexOf("\"")+1,find.lastIndexOf("=")-2);
-//			value=value.replaceAll(" ", "");
-//			value=value.replaceAll(",", "");
-//			value=value.replaceAll("\"", "");
-//			playersMap.put(key, value);
-//		}
+		Type type=new TypeToken<List<Map<String, Object>>>() {}.getType();
+		Type type2=new TypeToken<Map<String, Object>>() {}.getType();
+		Map<String, Object> serverDataMap=gson.fromJson(data, type2);
+		List<Map<String, Object>> playersMap=gson.fromJson(players, type);
+		String streamids="";
+		for(int i=0;i<playersMap.size();i++) {
+			Map<String, Object> map=playersMap.get(i);
+			streamids+=(String) map.get("netid")+",";
+		}
+		List<StreamUserInfo> infoList=streamService.getStreamUserInfo(streamids);
+		for(int i=0;i<playersMap.size();i++) {
+			Map<String, Object> map=playersMap.get(i);
+			StreamUserInfo currentInfo=null;
+			for(StreamUserInfo info:infoList) {
+				if(info.getSteamid().equals(map.get("netid"))) {
+					currentInfo=info;
+					break;
+				}
+			}
+			String infoStr=gson.toJson(currentInfo);
+			Map<String, Object> infoMap=gson.fromJson(infoStr, type2);
+			map.putAll(infoMap);
+		}
 		returnResult.put("serverData", serverDataMap);
 		returnResult.put("players", playersMap);
 		return returnResult;
 	}
-	 
+	
 }

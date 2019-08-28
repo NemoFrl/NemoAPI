@@ -12,9 +12,11 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.config.RequestConfig.Builder;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import nemofrl.nemoapi.exception.NemoAPIException;
+import nemofrl.nemoapi.util.HttpUtil;
 
 
 public class PixivDownloadExecutor implements Runnable {
@@ -45,7 +47,13 @@ public class PixivDownloadExecutor implements Runnable {
 			builder.setProxy(proxy);
 		}
 		RequestConfig requestConfig = builder.build();
-		HttpClient client = HttpClientBuilder.create().build();
+		HttpClient client;
+		try {
+			client = HttpUtil.getHttpClient();
+		} catch (NemoAPIException e1) {
+			logger.error("NemoAPIException",e1.getE());
+			return;
+		}
 		HttpGet get = new HttpGet(pictureUrl.replace("\\", ""));
 		get.setHeader("Host", " i.pximg.net");
 		get.setHeader("Connection", "keep-alive");

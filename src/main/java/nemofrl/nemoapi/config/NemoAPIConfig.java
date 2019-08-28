@@ -11,6 +11,9 @@ public class NemoAPIConfig {
 	@Value("${saveVideoPath:}")
 	private String saveVideoPath;
 	
+	@Value("${staticPath:}")
+	private String staticPath;
+	
 	@Value("${proxyIp:}")
 	private String proxyIp;
 	
@@ -22,6 +25,9 @@ public class NemoAPIConfig {
 	
 	@Value("${cookie:}")
 	private String cookie;
+	
+	@Value("${dstToken:}")
+	private String dstToken;
 	
 	public String getSaveFilePath() {
 		return saveFilePath;
@@ -69,6 +75,22 @@ public class NemoAPIConfig {
 
 	public void setSaveVideoPath(String saveVideoPath) {
 		this.saveVideoPath = saveVideoPath;
+	}
+
+	public String getStaticPath() {
+		return staticPath;
+	}
+
+	public void setStaticPath(String staticPath) {
+		this.staticPath = staticPath;
+	}
+
+	public String getDstToken() {
+		return dstToken;
+	}
+
+	public void setDstToken(String dstToken) {
+		this.dstToken = dstToken;
 	}
 
 	

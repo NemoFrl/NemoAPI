@@ -63,7 +63,7 @@ public class DstServerController {
 		RespDTO respDTO = new RespDTO("命令执行成功", RespDTO.SUCCESS, null);
 		resp.setHeader("Access-Control-Allow-Origin", "*");
 		
-		if(StringUtils.isAnyBlank(token,rowId)) {
+		if(StringUtils.isAnyBlank(rowId)) {
 			respDTO.setCode(RespDTO.ERROR_PARAMSLACK);
 			respDTO.setMsg("参数缺乏！");
 			return respDTO;

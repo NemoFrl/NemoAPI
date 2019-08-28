@@ -10,12 +10,12 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.config.RequestConfig.Builder;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import nemofrl.nemoapi.exception.NemoAPIException;
+import nemofrl.nemoapi.util.HttpUtil;
 
 public class PixivGetPictureUrl implements Callable<String> {
 	private String id;
@@ -40,7 +40,13 @@ public class PixivGetPictureUrl implements Callable<String> {
 			builder.setProxy(proxy);
 		}
 		RequestConfig requestConfig = builder.build();
-		HttpClient client2 = HttpClientBuilder.create().build();
+		HttpClient client2;
+		try {
+			client2 = HttpUtil.getHttpClient();
+		} catch (NemoAPIException e2) {
+			logger.error("NemoAPIException",e2.getE());
+			return null;
+		}
 		HttpGet get2 = new HttpGet("https://www.pixiv.net/member_illust.php?mode=medium&illust_id=" + id);
 		get2.setHeader("accept",
 				"text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8");

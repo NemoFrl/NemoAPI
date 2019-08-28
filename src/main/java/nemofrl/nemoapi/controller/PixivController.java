@@ -47,7 +47,15 @@ public class PixivController {
 		int page = (int) (Math.random() * 4) + 1;
 
 		logger.info("开始获取图片id");
-		ArrayList<String> ids = getIdList.getIdList(page, timeStr);
+		ArrayList<String> ids;
+		try {
+			ids = getIdList.getIdList(page, timeStr);
+		} catch (NemoAPIException e) {
+			logger.error(e.getMsg(),e.getE());
+			respDTO.setCode(e.getCode());
+			respDTO.setMsg(e.getMsg());
+			return respDTO;
+		}
 		logger.info("获取图片id成功，num:" + ids.size());
 		
 		int index=(int) (Math.random() * ids.size());

@@ -1,6 +1,6 @@
 package nemofrl.nemoapi.entity;
 
-public class DstServerVO {
+public class DstServerVO extends IpVO{
 
 	private boolean dedicated; //是否为专用服务器
 	
