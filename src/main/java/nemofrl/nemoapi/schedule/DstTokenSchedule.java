@@ -29,7 +29,11 @@ public class DstTokenSchedule {
 	
 	@Scheduled(cron="${dstTokenSchedule}")
 	public void process() {
-		
+		if(nemoAPIConfig.isDstTokenScheduleOpen())
+			task();
+	}
+	
+	public void task() {
 		HttpClient httpClient = HttpClientBuilder.create().build();
 		HttpPost httpPost = new HttpPost("https://login.kleientertainment.com/login/TokenPurpose");
 
@@ -50,5 +54,6 @@ public class DstTokenSchedule {
 			return;
 		}
 		logger.info("延续dst token时间成功,resp："+result);
+	
 	}
 }

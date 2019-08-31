@@ -37,7 +37,10 @@ public class RssServiceImpl implements RssService {
 		try {
 			Proxy proxy = new Proxy(Proxy.Type.HTTP,
 					new InetSocketAddress(nemoAPIConfig.getProxyIp(), nemoAPIConfig.getProxyPort()));
-			URLConnection feedUrl = new URL(rss).openConnection(proxy);
+			URLConnection feedUrl;
+			if(nemoAPIConfig.isOpenProxy())
+				feedUrl= new URL(rss).openConnection(proxy);
+			else feedUrl= new URL(rss).openConnection();
 			feedUrl.setRequestProperty("Accept-Language", "zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7");
 			// 读取Rss源
 			XmlReader reader = new XmlReader(feedUrl);

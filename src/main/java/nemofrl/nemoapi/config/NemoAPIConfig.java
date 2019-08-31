@@ -29,6 +29,15 @@ public class NemoAPIConfig {
 	@Value("${dstToken:}")
 	private String dstToken;
 	
+	@Value("${dstRssScheduleOpen:}")
+	private boolean dstRssScheduleOpen;
+	
+	@Value("${dstServerScheduleOpen:}")
+	private boolean dstServerScheduleOpen;
+	
+	@Value("${dstTokenScheduleOpen:}")
+	private boolean dstTokenScheduleOpen;
+	
 	public String getSaveFilePath() {
 		return saveFilePath;
 	}
@@ -91,6 +100,30 @@ public class NemoAPIConfig {
 
 	public void setDstToken(String dstToken) {
 		this.dstToken = dstToken;
+	}
+
+	public boolean isDstRssScheduleOpen() {
+		return dstRssScheduleOpen;
+	}
+
+	public void setDstRssScheduleOpen(boolean dstRssScheduleOpen) {
+		this.dstRssScheduleOpen = dstRssScheduleOpen;
+	}
+
+	public boolean isDstServerScheduleOpen() {
+		return dstServerScheduleOpen;
+	}
+
+	public void setDstServerScheduleOpen(boolean dstServerScheduleOpen) {
+		this.dstServerScheduleOpen = dstServerScheduleOpen;
+	}
+
+	public boolean isDstTokenScheduleOpen() {
+		return dstTokenScheduleOpen;
+	}
+
+	public void setDstTokenScheduleOpen(boolean dstTokenScheduleOpen) {
+		this.dstTokenScheduleOpen = dstTokenScheduleOpen;
 	}
 
 	

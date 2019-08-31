@@ -44,7 +44,7 @@ public class PixivController {
 		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMM");
 		String timeStr = simpleDateFormat.format(time);
 		//1-5页随机
-		int page = (int) (Math.random() * 4) + 1;
+		int page = (int) (Math.random() * 2) + 1;
 
 		logger.info("开始获取图片id");
 		ArrayList<String> ids;

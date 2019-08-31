@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import nemofrl.nemoapi.entity.DstServerVO;
 import nemofrl.nemoapi.entity.RespDTO;
 import nemofrl.nemoapi.exception.NemoAPIException;
 import nemofrl.nemoapi.service.DstServerService;
@@ -78,4 +79,24 @@ public class DstServerController {
 		}
 		return respDTO;
 	}
+	@RequestMapping(value = "/searchDstPlayer", produces = { "application/json;charset=UTF-8" })
+	public RespDTO searchDstPlayer(HttpServletResponse resp,String userName) {
+		RespDTO respDTO = new RespDTO("命令执行成功", RespDTO.SUCCESS, null);
+		resp.setHeader("Access-Control-Allow-Origin", "*");
+		if(StringUtils.isAnyBlank(userName)) {
+			respDTO.setCode(RespDTO.ERROR_PARAMSLACK);
+			respDTO.setMsg("参数缺乏！");
+			return respDTO;
+		}
+		try {
+			DstServerVO result=dstServerService.searchDstPlayer(userName);
+			respDTO.setData(result);
+		} catch (NemoAPIException e) {
+			logger.error(e.getMsg(),e.getE());
+			respDTO.setCode(e.getCode());
+			respDTO.setMsg(e.getMsg());
+		}
+		return respDTO;
+	}
+	
 }

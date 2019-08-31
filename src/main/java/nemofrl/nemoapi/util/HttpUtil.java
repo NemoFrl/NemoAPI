@@ -2,7 +2,6 @@ package nemofrl.nemoapi.util;
 
 import java.io.IOException;
 import java.net.URI;
-import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 
 import javax.net.ssl.SSLContext;
@@ -58,8 +57,8 @@ public class HttpUtil {
                     .build();
 
 		    cm = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
-		} catch (NoSuchAlgorithmException e1) {
-			throw new NemoAPIException("NoSuchAlgorithmException", NemoAPIException.ERROR_NETCONNECT, e1);
+		} catch (Exception e1) {
+			throw new NemoAPIException("Exception", NemoAPIException.ERROR_NETCONNECT, e1);
 		} 
 
 		HttpClient httpClient = HttpClientBuilder.create().setSSLSocketFactory(sslsf).setConnectionManager(cm).build();
@@ -95,6 +94,7 @@ public class HttpUtil {
 		logger.debug("start httpReq,url:"+uri.toString());
 		Date before=new Date();
 		String result;
+
 		try {
 			HttpResponse resp = httpClient.execute(request);
 			if (resp.getStatusLine().getStatusCode() == HttpStatus.SC_OK)
@@ -104,7 +104,7 @@ public class HttpUtil {
 				throw new NemoAPIException(errorMsg, NemoAPIException.ERROR_NETSTATUS);
 			}
 		} catch (IOException e) {
-			String errorMsg="请求错误,url:"+request.getURI().getPath();
+			String errorMsg="请求错误,url:"+uri.toString();
 			throw new NemoAPIException(errorMsg, NemoAPIException.ERROR_NETCONNECT, e);
 		}
 		Date after=new Date();

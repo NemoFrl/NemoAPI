@@ -222,5 +222,35 @@ public class DstServerServiceImpl implements DstServerService{
 		returnResult.put("players", playersMap);
 		return returnResult;
 	}
+
+
+
+	@Override
+	public DstServerVO searchDstPlayer(String userName) throws NemoAPIException {
+		Gson gson=new Gson();
+		Map<String,Object> params=new HashMap<>();
+		Map<String,String> query=new HashMap<>();
+		
+		for(int i=0;i<dstServerVOList.size();i++) {
+			DstServerVO dstServerVO=dstServerVOList.get(i);
+			if(dstServerVO.getConnected()==0)
+				continue;
+			String rowId=dstServerVO.get__rowId();
+
+			String token=nemoAPIConfig.getDstToken();
+			query.put("__rowId", rowId);
+			params.put("__gameId", "DontStarveTogether");
+			params.put("__token", token);
+			params.put("query", query);
+			
+			HttpEntity entity=new StringEntity(gson.toJson(params),StandardCharsets.UTF_8);
+			
+			String url="https://lobby-china.kleientertainment.com/lobby/read";
+			String result=httpUtil.httpReq(true, url, HttpMethod.POST,entity);
+			if(result.contains(userName))
+				return dstServerVO;
+		}
+		return null;
+	}
 	
 }
